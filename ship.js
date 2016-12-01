@@ -79,10 +79,14 @@ async function start () {
         const updated = fs.writeFileSync(electronPackagePath, JSON.stringify(newElectronPackage, null, 2));
 
         console.log(`${logSymbols.info} Removing Node Modules`);
-        execa('rm', ['-rf', 'node_modules'], {cwd: basePath}).stdout.pipe(process.stdout);
+        const removed = await execa('rm', ['-rf', 'node_modules'], {cwd: basePath}).stdout.pipe(process.stdout);
 
-        console.log(`${logSymbols.info} Re-Installing Node Modules`);
-        execa('npm', ['install'], {cwd: basePath}).stdout.pipe(process.stdout);
+        try {
+            console.log(`${logSymbols.info} Re-Installing Node Modules`);
+            const installed = await execa('npm', ['install'], {cwd: basePath}).stdout.pipe(process.stdout);
+        } catch (error) {
+            console.log('inside', error);
+        }
     }
 }
 
@@ -127,8 +131,11 @@ async function checkEnv() {
         console.log(`Please make sure you've checked out the latest master`);
         return;
     }
-
-    start();
+    try {
+        start();
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 
